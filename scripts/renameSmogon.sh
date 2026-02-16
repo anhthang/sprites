@@ -84,15 +84,36 @@ convert(){
             fi
             if [ "$form" ]; then
                 pokemonName=$(echo "$formDS" | jq -r ".[\"${id}_${form}\"]")
+
                 if [ $? -ne 0 ] || [ "$pokemonName" == 'null' ]; then
                     echo "[-] Form ${id}_${form} wasn't found in the JSON mapping"
                 else
-                    pokemonID=$(curl -sS "https://pokeapi.co/api/v2/pokemon/$pokemonName/" | jq -r '.id' 2>/dev/null)
-                    if [ $? -ne 0 ]; then
-                        echo "[-] Pkmn $pokemonName wasn't found in PokeAPI"
-                    else
-                        echo "[+] Copying Form $smogonName to $destination/$pokemonID.png"
+                    # --- PRIMARY LOGIC: Try to get ID by specific name ---
+                    response=$(curl -sS "https://pokeapi.co/api/v2/pokemon/$pokemonName/" 2>/dev/null)
+                    pokemonID=$(echo "$response" | jq -r '.id' 2>/dev/null)
+
+                    if [ -n "$pokemonID" ] && [ "$pokemonID" != "null" ]; then
+                        echo "[+] Found by name: Moving $smogonName to $destination/$pokemonID.png"
                         mv "$smogonName" "$destination/$pokemonID.png"
+                    else
+                        # --- FALLBACK LOGIC: Search 'forms' using the full name ---
+                        echo "[!] $pokemonName not found directly. Searching forms for Species ID: $id..."
+                        
+                        speciesResponse=$(curl -sS "https://pokeapi.co/api/v2/pokemon/$id/" 2>/dev/null)
+                        
+                        formSuffix=$(echo "$speciesResponse" | jq -r \
+                            --arg name "$pokemonName" \
+                            '.forms[] | select(.name == $name) | .name | sub("^[^#-]+-"; "")' 2>/dev/null)
+
+                        if [ -n "$formSuffix" ] && [ "$formSuffix" != "null" ] && [ "$formSuffix" != "$pokemonName" ]; then
+                            destFile="${id}-${formSuffix}.png"
+                            
+                            echo "[+] Found in forms: Moving $smogonName to $destination/$destFile"
+                            mv "$smogonName" "$destination/$destFile"
+                        else
+                            echo "[!] No dash suffix found for $pokemonName, using ID only."
+                            mv "$smogonName" "$destination/$id.png"
+                        fi
                     fi
                 fi
             fi

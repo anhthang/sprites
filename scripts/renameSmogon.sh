@@ -79,7 +79,7 @@ convert(){
                     echo "[-] Pkmn $speciesName-$isGmax wasn't found in PokeAPI"
                 else
                     echo "[+] Copying GMax $smogonName to $destination/$pokemonID.png"
-                    cp "$smogonName" "$destination/$pokemonID.png"
+                    mv "$smogonName" "$destination/$pokemonID.png"
                 fi
             fi
             if [ "$form" ]; then
@@ -94,7 +94,7 @@ convert(){
 
                     if [ -n "$pokemonID" ] && [ "$pokemonID" != "null" ]; then
                         echo "[+] Found by name: Moving $smogonName to $destination/$pokemonID.png"
-                        cp "$smogonName" "$destination/$pokemonID.png"
+                        mv "$smogonName" "$destination/$pokemonID.png"
                     else
                         # --- FALLBACK LOGIC: Search 'forms' using the full name ---
                         echo "[!] $pokemonName not found directly. Searching forms for Species ID: $id..."
@@ -109,10 +109,10 @@ convert(){
                             destFile="${id}-${formSuffix}.png"
                             
                             echo "[+] Found in forms: Moving $smogonName to $destination/$destFile"
-                            cp "$smogonName" "$destination/$destFile"
+                            mv "$smogonName" "$destination/$destFile"
                         else
                             echo "[!] No dash suffix found for $pokemonName, using ID only."
-                            cp "$smogonName" "$destination/$id.png"
+                            mv "$smogonName" "$destination/$id.png"
                         fi
                     fi
                 fi
@@ -120,7 +120,7 @@ convert(){
             if [ ! "$form" ] && [ ! "$isGmax" ]; then
                 echo "[+] Copying Pkmn $smogonName $destination/$id.png"
                 mkdir -p "$destination"
-                cp "$smogonName" "$destination/$id.png"
+                mv "$smogonName" "$destination/$id.png"
             fi
         fi
     done

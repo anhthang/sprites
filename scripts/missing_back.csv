@@ -119,13 +119,6 @@ id,identifier,generation
 1023,iron-crown,9
 1024,terapagos,9
 1025,pecharunt,9
-10001,deoxys-attack,3
-10002,deoxys-defense,3
-10003,deoxys-speed,3
-10004,wormadam-sandy,4
-10005,wormadam-trash,4
-10006,shaymin-sky,4
-10007,giratina-origin,4
 10008,rotom-heat,4
 10009,rotom-wash,4
 10010,rotom-frost,4
@@ -134,15 +127,6 @@ id,identifier,generation
 10013,castform-sunny,3
 10014,castform-rainy,3
 10015,castform-snowy,3
-10016,basculin-blue-striped,5
-10017,darmanitan-zen,5
-10018,meloetta-pirouette,5
-10019,tornadus-therian,5
-10020,thundurus-therian,5
-10021,landorus-therian,5
-10022,kyurem-black,5
-10023,kyurem-white,5
-10024,keldeo-resolute,5
 10027,pumpkaboo-small,6
 10028,pumpkaboo-large,6
 10029,pumpkaboo-super,6
@@ -150,7 +134,6 @@ id,identifier,generation
 10031,gourgeist-large,6
 10032,gourgeist-super,6
 10093,raticate-totem-alola,7
-10117,greninja-ash,7
 10121,gumshoos-totem,7
 10122,vikavolt-totem,7
 10128,lurantis-totem,7

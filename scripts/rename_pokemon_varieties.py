@@ -1,9 +1,9 @@
-import os
 import requests
 import time
+import argparse
+from pathlib import Path
 
 # Configuration
-ROOT_FOLDER = "../sprites/pokemon/other"
 API_BASE_URL = "https://pokeapi.co/api/v2/pokemon-species/"
 
 # Simple in-memory cache to store API responses
@@ -35,58 +35,58 @@ def get_species_data(pokedex_num):
         return None
 
 
-def process_folders():
-    if not os.path.exists(ROOT_FOLDER):
-        print(f"Error: Folder '{ROOT_FOLDER}' not found.")
+def process_folders(root_path):
+    root_path = Path(root_path)
+
+    if not root_path.exists():
+        print(f"Error: Folder '{root_path}' not found.")
         return
 
-    # os.walk travels through every child folder automatically
-    for root, dirs, files in os.walk(ROOT_FOLDER):
-        for filename in files:
-            # Match files like '877-hangry.png'
-            if "-" in filename and filename.endswith(".png"):
-                basename = filename.replace(".png", "")
-                parts = basename.split("-")
+    for file_path in root_path.rglob("*.png"):
+        filename = file_path.name
 
-                pokedex_num = parts[0]
-                variety_suffix = parts[1].lower()
+        if "-" in filename:
+            basename = file_path.stem
 
-                species_data = get_species_data(pokedex_num)
+            # Split only ONCE to handle names like 1011-dudunsparce-three-segment
+            parts = basename.split("-", 1)
 
-                if species_data:
-                    species_name = species_data["name"]
-                    varieties = species_data["varieties"]
+            pokedex_num = parts[0]
+            variety_suffix = parts[1].lower()
 
-                    # Target name logic: "species-variety" (e.g., "morpeko-hangry")
-                    target_match_name = f"{species_name}-{variety_suffix}"
+            species_data = get_species_data(pokedex_num)
 
-                    new_id = None
-                    for v in varieties:
-                        if v["pokemon"]["name"] == target_match_name:
-                            # Extract numeric ID from the URL string
-                            url_parts = v["pokemon"]["url"].strip("/").split("/")
-                            new_id = url_parts[-1]
-                            break
+            if species_data:
+                species_name = species_data["name"]
+                varieties = species_data["varieties"]
 
-                    if new_id:
-                        old_path = os.path.join(root, filename)
-                        new_filename = f"{new_id}.png"
-                        new_path = os.path.join(root, new_filename)
+                # Target name logic: "species-variety" (e.g., "morpeko-hangry")
+                target_match_name = f"{species_name}-{variety_suffix}"
 
-                        # Prevent overwriting if the file already exists
-                        # if not os.path.exists(new_path):
-                        os.rename(old_path, new_path)
-                        print(f"Success: [{root}] {filename} -> {new_filename}")
-                        # else:
-                        #     print(f"Skipped: {new_filename} already exists in {root}")
-                    # else:
-                    #     print(
-                    #         f"Notice: No variety match for '{target_match_name}' in {filename}"
-                    #     )
+                new_id = None
+                for v in varieties:
+                    if v["pokemon"]["name"] == target_match_name:
+                        # Extract numeric ID from the PokeAPI URL
+                        url_parts = v["pokemon"]["url"].strip("/").split("/")
+                        new_id = url_parts[-1]
+                        break
+
+                if new_id:
+                    new_filename = f"{new_id}.png"
+                    new_file_path = file_path.with_name(new_filename)
+
+                    file_path.replace(new_file_path)
+                    print(f"Success: [{file_path.parent}] {filename} -> {new_filename}")
 
 
 if __name__ == "__main__":
-    start_time = time.time()
-    process_folders()
-    duration = time.time() - start_time
-    print(f"\nFinished! Processed folders in {duration:.2f} seconds.")
+    parser = argparse.ArgumentParser(
+        description="Rename Pokemon variety images via PokéAPI."
+    )
+    parser.add_argument("folder", help="Path to the folder to process")
+
+    args = parser.parse_args()
+
+    process_folders(args.folder)
+
+    print(f"\nFinished!")
